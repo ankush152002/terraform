@@ -30,8 +30,8 @@ resource "aws_security_group" "ecs" {
   }
 }
 
-resource "aws_ecs_cluster" "main" {
-  name = "hello-world-cluster"
+resource "aws_ecs_cluster" "new_cluster" {
+  name = "my-new-cluster"
 }
 
 resource "aws_ecs_task_definition" "hello_world" {
@@ -44,7 +44,7 @@ resource "aws_ecs_task_definition" "hello_world" {
   container_definitions = jsonencode([
     {
       name      = "hello-world"
-      image     = "ankush152002/hello-world-nodejs:latest"
+      image     = "${var.dockerhub_username}/hello-world-nodejs:latest"
       essential = true
       portMappings = [
         {
@@ -56,15 +56,19 @@ resource "aws_ecs_task_definition" "hello_world" {
   ])
 }
 
-resource "aws_ecs_service" "hello_world" {
-  name            = "hello-world-service"
-  cluster         = aws_ecs_cluster.main.id
+resource "aws_ecs_service" "new_service" {
+  name            = "my-new-hello-world-service"
+  cluster         = aws_ecs_cluster.new_cluster.id
   task_definition = aws_ecs_task_definition.hello_world.arn
   desired_count   = 1
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets          = [aws_subnet.public.id]
-    security_groups  = [aws_security_group.ecs.id]
+    subnets         = [aws_subnet.public.id]
+    security_groups = [aws_security_group.ecs.id]
   }
+}
+
+variable "dockerhub_username" {
+  description = "ankush152002"
 }
